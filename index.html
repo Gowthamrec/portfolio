@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gowtham U | Mechatronics & Robotics Engineer</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#09090b',
+                        surface: '#18181b',
+                        surfaceHover: '#27272a',
+                        accent: '#3b82f6',
+                        accentGlow: 'rgba(59, 130, 246, 0.4)',
+                    },
+                    fontFamily: {
+                        sans: ['"Inter"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            background-color: #09090b;
+            color: #d4d4d8;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .ambient-glow {
+            position: fixed;
+            top: -20%;
+            left: -10%;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .ambient-glow-2 {
+            position: fixed;
+            bottom: -20%;
+            right: -10%;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            background-image:
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            -webkit-mask-image: radial-gradient(circle at center, black, transparent 70%);
+            mask-image: radial-gradient(circle at center, black, transparent 70%);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #09090b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-accent selection:text-white">
+    <div class="ambient-glow"></div>
+    <div class="ambient-glow-2"></div>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { motion, useScroll, useSpring } = window.Motion;
+        const { useState, useEffect } = React;
+
+        const Button = ({ children, primary, href }) => {
+            const baseClass = "inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 shadow-lg";
+            const colorClass = primary
+                ? "bg-accent text-white hover:bg-blue-400 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] border border-blue-500/50 hover:border-blue-400"
+                : "bg-surface/50 backdrop-blur-md border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 hover:bg-surfaceHover/80";
+
+            const isExternal = href && href.startsWith('http');
+
+            return (
+                <motion.a
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    href={href || "#"}
+                    target={isExternal ? "_blank" : "_self"}
+                    rel={isExternal ? "noopener noreferrer" : undefined}
+                    className={`${baseClass} ${colorClass}`}
+                >
+                    {children}
+                </motion.a>
+            );
+        };
+
+        const SkillBadge = ({ name, icon }) => (
+            <motion.div
+                initial={{ opacity: 0, scale: 0.8, rotate: -3 }}
+                whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+                viewport={{ once: true }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                whileHover={{ y: -5, scale: 1.05 }}
+                className="relative bg-surface/30 backdrop-blur-sm border border-zinc-800/60 rounded-xl p-3 h-28 w-full flex flex-col items-center justify-center text-center gap-2 transition-all duration-300 shadow-sm group hover:border-zinc-600/80 overflow-hidden cursor-default"
+            >
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                <i className={`uil ${icon} text-3xl mb-1 text-zinc-500 group-hover:text-blue-400 transition-colors duration-300`}></i>
+                <span className="text-zinc-400 group-hover:text-zinc-200 text-xs md:text-sm font-medium leading-tight transition-colors duration-300">{name}</span>
+            </motion.div>
+        );
+
+        const PostCard = ({ title, desc, tags, href }) => (
+            <motion.a
+                href={href} target="_blank" rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                whileHover={{ y: -10, scale: 1.02 }}
+                className="relative bg-surface/30 backdrop-blur-md border border-zinc-800/50 rounded-2xl p-6 flex flex-col gap-4 hover:border-blue-500/40 hover:bg-surface/60 transition-all duration-500 h-full group shadow-lg overflow-hidden cursor-pointer block"
+            >
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                <div className="relative z-10 flex justify-between items-start gap-4">
+                    <h3 className="text-xl font-bold text-zinc-100 group-hover:text-blue-400 transition-colors leading-snug">{title}</h3>
+                    <div className="w-8 h-8 rounded-full bg-zinc-800/50 group-hover:bg-blue-500/10 flex items-center justify-center flex-shrink-0 transition-colors duration-300">
+                        <i className="uil uil-arrow-up-right text-zinc-400 group-hover:text-blue-400 text-lg transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"></i>
+                    </div>
+                </div>
+                <p className="relative z-10 text-zinc-400 text-sm leading-relaxed flex-grow group-hover:text-zinc-300 transition-colors duration-300">{desc}</p>
+                <div className="relative z-10 flex flex-wrap gap-2 mt-2 pt-4 border-t border-zinc-800/50">
+                    {tags.map((t, idx) => (
+                        <span key={idx} className="text-[11px] font-semibold tracking-wide px-2.5 py-1 bg-accent/5 text-blue-300/90 rounded-md border border-accent/20 uppercase">{t}</span>
+                    ))}
+                </div>
+            </motion.a>
+        );
+
+        const Portfolio = () => {
+            const [scrolled, setScrolled] = useState(false);
+            const { scrollYProgress } = useScroll();
+            const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+
+            useEffect(() => {
+                const handleScroll = () => setScrolled(window.scrollY > 50);
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            return (
+                <div className="min-h-screen">
+                    {/* Scroll Progress Bar */}
+                    <motion.div
+                        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 origin-left z-[60]"
+                        style={{ scaleX }}
+                    />
+
+                    {/* Navigation */}
+                    <nav className={`fixed top-0 w-full p-4 md:px-8 lg:px-12 flex justify-between items-center z-50 transition-all duration-500 ${scrolled ? 'bg-background/60 backdrop-blur-xl border-b border-zinc-800/50 shadow-lg shadow-black/20' : 'bg-transparent pt-6'}`}>
+                        <div className="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                            Gowtham U
+                        </div>
+                        <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-zinc-400 tracking-wide">
+                            <a href="#about" className="hover:text-blue-400 transition-colors py-2">About</a>
+                            <a href="#skills" className="hover:text-blue-400 transition-colors py-2">Expertise</a>
+                            <a href="#experience" className="hover:text-blue-400 transition-colors py-2">Experience</a>
+                            <a href="#achievements" className="hover:text-blue-400 transition-colors py-2">Achievements</a>
+                            <a href="#contact" className="hover:text-blue-400 transition-colors py-2">Contact</a>
+                        </div>
+                    </nav>
+
+                    <main className="px-6 md:px-12 lg:px-24 xl:px-40 pb-20">
+                        {/* HERO SECTION */}
+                        <section id="home" className="min-h-screen flex flex-col justify-center pt-24 pb-12 relative">
+                            <div className="hero-grid"></div>
+                            <motion.div
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 1, ease: "easeOut" }}
+                                className="max-w-4xl relative z-10"
+                            >
+                                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider mb-6 shadow-inner">
+                                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> Ex-Intern @ TCS Innovation Lab
+                                </div>
+                                <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+                                    Giving <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500">hardware</span> a mind of its own.
+                                </h1>
+                                <p className="text-lg md:text-xl text-zinc-400 mb-10 leading-relaxed max-w-2xl font-light">
+                                    Mechatronics Engineer specializing in Robotics, Computer Vision, and Autonomous Systems. Turning pure potential into deployable, functional reality.
+                                </p>
+
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <Button primary href="#achievements">View My Work</Button>
+                                    <Button href="Resume.pdf">Download Resume</Button>
+                                    <div className="flex items-center gap-3 ml-2">
+                                        <a href="https://github.com/Gowthamrec" target="_blank" className="p-3 rounded-full bg-surface/50 backdrop-blur-md border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors shadow-sm group">
+                                            <i className="uil uil-github text-xl group-hover:scale-110 transition-transform block"></i>
+                                        </a>
+                                        <a href="https://www.linkedin.com/in/gowtham-u-467b27254" target="_blank" className="p-3 rounded-full bg-surface/50 backdrop-blur-md border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors shadow-sm group">
+                                            <i className="uil uil-linkedin text-xl group-hover:scale-110 transition-transform block"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </section>
+
+                        {/* ABOUT & EDUCATION SECTION */}
+                        <section id="about" className="py-24 border-t border-zinc-800/50">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="lg:col-span-2">
+                                    <h2 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-zinc-400 mb-8 tracking-tight">System Overview</h2>
+                                    <div className="bg-surface/20 backdrop-blur-lg rounded-3xl p-8 md:p-10 border border-zinc-800/40 text-zinc-400 text-base md:text-lg leading-relaxed space-y-6 shadow-xl">
+                                        <p className="group-hover:text-zinc-300 transition-colors">I am a <strong className="text-zinc-200 font-semibold drop-shadow-sm">B.E. Mechatronics Engineering</strong> student at Rajalakshmi Engineering College. I love combining mechanics, electronics, and coding to build machines that can think and move on their own.</p>
+                                        <p className="group-hover:text-zinc-300 transition-colors">My main focus is on how <strong className="text-zinc-200 font-semibold drop-shadow-sm">Robotics and Embedded Systems</strong> make everyday life better. Whether I am programming an autonomous electric vehicle, building a humanoid robot, or setting up smart sensors, I believe intelligent machines are the future of human convenience and safety.</p>
+                                        <p className="group-hover:text-zinc-300 transition-colors">More than just writing code, my goal is to give hardware a mind of its own. I also actively volunteer as a Technical & Placement Mentor, helping junior students learn engineering basics and build their own real-world hardware projects.</p>
+                                    </div>
+                                </motion.div>
+                                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>
+                                    <h2 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-zinc-400 mb-8 tracking-tight">Education</h2>
+                                    <div className="space-y-6">
+                                        <div className="bg-surface/30 backdrop-blur-md border border-zinc-800/60 rounded-2xl p-6 hover:border-zinc-700 transition-colors shadow-lg">
+                                            <h3 className="text-lg font-bold text-zinc-100 mb-1">Rajalakshmi Engineering College</h3>
+                                            <p className="text-blue-400 text-sm font-semibold tracking-wide mb-3 uppercase">B.E Mechatronics (2022–2026)</p>
+                                            <p className="text-zinc-400 text-sm font-medium">CGPA: 7.83 | Chennai, TN</p>
+                                        </div>
+                                        <div className="bg-surface/30 backdrop-blur-md border border-zinc-800/60 rounded-2xl p-6 hover:border-zinc-700 transition-colors shadow-lg">
+                                            <h3 className="text-lg font-bold text-zinc-100 mb-1">Edustar International School</h3>
+                                            <p className="text-zinc-300 text-sm font-semibold tracking-wide mb-3 uppercase">HSC (83.2%) & SSLC (83%)</p>
+                                            <p className="text-zinc-400 text-sm font-medium">Kovilpatti, TN | 2019 – 2022</p>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        </section>
+
+                        {/* SKILLS SECTION */}
+                        <section id="skills" className="py-24 border-t border-zinc-800/50">
+                            <div className="max-w-6xl">
+                                <h2 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-zinc-400 mb-12 tracking-tight">Technical Expertise</h2>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                                    <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.1 }} viewport={{ once: true }}>
+                                        <h3 className="text-lg font-bold text-zinc-200 mb-6 flex items-center gap-2"><i className="uil uil-robot text-blue-400 text-xl"></i> Robotics</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <SkillBadge name="ROS/ROS2" icon="uil-cog" />
+                                            <SkillBadge name="SLAM" icon="uil-map-marker" />
+                                            <SkillBadge name="Nav2" icon="uil-navigator" />
+                                            <SkillBadge name="Gazebo" icon="uil-box" />
+                                        </div>
+                                    </motion.div>
+                                    <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.2 }} viewport={{ once: true }}>
+                                        <h3 className="text-lg font-bold text-zinc-200 mb-6 flex items-center gap-2"><i className="uil uil-eye text-blue-400 text-xl"></i> Vision & AI</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <SkillBadge name="OpenCV" icon="uil-focus" />
+                                            <SkillBadge name="YOLO" icon="uil-camera" />
+                                            <SkillBadge name="OCR" icon="uil-file-search-alt" />
+                                            <SkillBadge name="AI / ML" icon="uil-brain" />
+                                        </div>
+                                    </motion.div>
+                                    <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.3 }} viewport={{ once: true }}>
+                                        <h3 className="text-lg font-bold text-zinc-200 mb-6 flex items-center gap-2"><i className="uil uil-circuit text-blue-400 text-xl"></i> Embedded Sys</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <SkillBadge name="Arduino" icon="uil-microscope" />
+                                            <SkillBadge name="ESP32" icon="uil-server-network" />
+                                            <SkillBadge name="STM32" icon="uil-processor" />
+                                            <SkillBadge name="Sensors" icon="uil-signal-alt-3" />
+                                        </div>
+                                    </motion.div>
+                                    <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.4 }} viewport={{ once: true }}>
+                                        <h3 className="text-lg font-bold text-zinc-200 mb-6 flex items-center gap-2"><i className="uil uil-brackets-curly text-blue-400 text-xl"></i> Core Tools</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <SkillBadge name="Python" icon="uil-arrow" />
+                                            <SkillBadge name="C / C++" icon="uil-letter-c" />
+                                            <SkillBadge name="SolidWorks" icon="uil-cube" />
+                                            <SkillBadge name="MATLAB" icon="uil-chart-line" />
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* EXPERIENCE SECTION */}
+                        <section id="experience" className="py-24 border-t border-zinc-800/50">
+                            <h2 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-zinc-400 mb-12 tracking-tight">Experience & Leadership</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                <PostCard
+                                    href="https://www.linkedin.com/posts/gowtham-u-467b27254_internship-activity-7318302205420138497-pBjT"
+                                    title="Robotics PoC Intern @ TCS Innovation Lab"
+                                    desc="Contributed to cutting-edge Proof-of-Concept projects combining edge computing, AI, and ROS2 based automation. Gained severe corporate insight and enhanced practical tech-stack deployments."
+                                    tags={['Internship', 'ROS2', 'Proof-of-Concept']}
+                                />
+                                <PostCard
+                                    href="https://www.linkedin.com/posts/gowtham-u-467b27254_micromanubot-titanium-indiaslargesttechfest-activity-7431244921174614016-WJCU"
+                                    title="Student Coordinator: Micromanubot Titanium"
+                                    desc="Organized a massively successful national-level robotics fest recreating real-world factory automation constraints via Pick & Place and Line Following."
+                                    tags={['Leadership', 'Factory Automation']}
+                                />
+                                <PostCard
+                                    href="https://www.linkedin.com/posts/gowtham-u-467b27254_volunteering-brings-out-the-best-in-us-truly-activity-7407841991692152832-q-0U"
+                                    title="Technical & Placement Mentor"
+                                    desc="Volunteered as a placement mentor for juniors during Winter Camp, providing direct guidance on core engineering fundamentals, resume construction, and interview logic."
+                                    tags={['Volunteering', 'Mentorship']}
+                                />
+                            </div>
+                        </section>
+
+                        {/* ACHIEVEMENTS SECTION */}
+                        <section id="achievements" className="py-24 border-t border-zinc-800/50">
+                            <h2 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-zinc-400 mb-12 tracking-tight">Competitions & Achievements</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                <PostCard
+                                    href="https://www.linkedin.com/posts/gowtham-u-467b27254_ebdc-electricbike-ev-activity-7392302833137717248-zluc"
+                                    title="Innovation Team Lead: EBDC'25"
+                                    desc="Led development of next-gen Electric Bike tech at Coimbatore. Handled EV mechanical fabrication, gaining insights that secured our team 5 separate awards."
+                                    tags={['Electric Vehicles', 'Award Winner']}
+                                />
+                                <PostCard
+                                    href="https://www.linkedin.com/posts/gowtham-u-467b27254_eyantra-krishidrone-robotics-activity-7416933479872909313-3uSF"
+                                    title="Stage 2 Qualifier: e-Yantra (IIT Bombay)"
+                                    desc="Currently developing precision drone-based robotics. Secured official drone hardware directly from IIT Bombay's national competitive qualifiers."
+                                    tags={['e-Yantra', 'Drones', 'IIT Bombay']}
+                                />
+                                <PostCard
+                                    href="https://www.linkedin.com/posts/gowtham-u-467b27254_nptel-activity-7398251105484357632-WZMJ"
+                                    title="NPTEL Certifications"
+                                    desc="Successfully cleared and secured national-level certifications through NPTEL, proving continuous learning and dedication to fundamental theoretical academics."
+                                    tags={['Certification', 'Academics']}
+                                />
+                                <PostCard
+                                    href="https://www.linkedin.com/posts/gowtham-u-467b27254_hackathon-gamedevelopment-hackoverflow-activity-7220846908037066754-MqYF"
+                                    title="Hackoverflow Hackathon"
+                                    desc="Participated and innovated during an intensive Game Development Hackathon scenario pushing bounds of programming under severe time constraints."
+                                    tags={['Hackathon', 'Innovation']}
+                                />
+                            </div>
+                        </section>
+
+                        {/* ROBOTICS IMPLEMENTATIONS */}
+                        <section className="py-24 border-t border-zinc-800/50">
+                            <h2 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-zinc-400 mb-6 tracking-tight">Robotics & Tech Implementations</h2>
+                            <p className="text-zinc-400 mb-12 max-w-2xl text-lg">Click on any card to view the live demonstration, source, or detailed explanation of the build directly on my LinkedIn.</p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                <PostCard
+                                    href="https://www.linkedin.com/posts/gowtham-u-467b27254_electricvehicle-ros2humble-arduino-activity-7317524836711387136-mmZy"
+                                    title="Autonomous EV Conversion"
+                                    desc="Upgrading a custom-built electric vehicle into an autonomous system using ROS2 and AI. Integrating LiDAR and GPS-IMU for robust localization."
+                                    tags={['ROS2 Humble', 'Sensor Fusion']}
+                                />
+                                <PostCard
+                                    href="https://www.linkedin.com/posts/gowtham-u-467b27254_ros2-nav2-slam-activity-7331413863667560451-uaHQ"
+                                    title="Full ROS2 SLAM & Nav2 Stack"
+                                    desc="Designed a mobile robot achieving Simultaneous Localization & Mapping combined with precise dynamic obstacle avoidance."
+                                    tags={['ROS2', 'LiDAR', 'SLAM', 'Nav2']}
+                                />
+                                <PostCard
+                                    href="https://www.linkedin.com/posts/gowtham-u-467b27254_robotics-ros2-ackermannsteering-activity-7324101471606648832-XKxk"
+                                    title="Ackermann Steering with ROS2"
+                                    desc="Engineered and programmed custom Ackermann steering kinematics utilizing ROS2 frameworks for realistic vehicular simulation profiles."
+                                    tags={['Kinematics', 'Ackermann']}
+                                />
+                                <PostCard
+                                    href="https://www.linkedin.com/posts/ajinrejisa_robotics-humanoidrobot-esp32-ugcPost-7224471757422833666-Jc3T"
+                                    title="Humanoid Robot via ESP32"
+                                    desc="Engineered a humanoid structure leveraging precise servo motors and an ESP32 architecture, mapped directly to an Android UI for remote motion control."
+                                    tags={['ESP32', 'Robotics', 'IoT']}
+                                />
+                            </div>
+                        </section>
+
+                        {/* CONTACT SECTION */}
+                        <section id="contact" className="py-24 border-t border-zinc-800/50 flex flex-col items-center text-center">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                whileInView={{ opacity: 1, scale: 1 }}
+                                viewport={{ once: true }}
+                                transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                                className="max-w-3xl"
+                            >
+                                <div className="inline-block mb-10 p-5 rounded-full bg-blue-500/10 border border-blue-500/20 shadow-lg shadow-blue-500/5">
+                                    <i className="uil uil-envelope-alt text-5xl text-blue-400"></i>
+                                </div>
+                                <h2 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-zinc-400 mb-8 tracking-tight">Ready to engineer tomorrow?</h2>
+                                <p className="text-zinc-400 text-lg md:text-xl mb-12 leading-relaxed max-w-2xl mx-auto">
+                                    I am actively seeking opportunities where complex hardware and cutting-edge software collide. Whether your team is building the future of autonomous mobility, embedded AI, or next-gen robotics, my inbox is always open. Let's build machines that matter.
+                                </p>
+                                <Button primary href="https://mail.google.com/mail/?view=cm&fs=1&to=gowthammct2026@gmail.com">Initialize Communication</Button>
+                            </motion.div>
+                        </section>
+                    </main>
+
+                    <footer className="py-10 text-center border-t border-zinc-800/50 bg-background/50 text-zinc-500 text-sm">
+                        <p className="font-medium text-zinc-400">© 2026 Gowtham U. All rights reserved.</p>
+                        <p className="mt-2 text-xs text-zinc-600 tracking-wide uppercase font-semibold">Mechatronics & Autonomous Systems | Deployed via CDN Architecture</p>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Portfolio />);
+    </script>
+</body>
+
+</html>
