@@ -106,7 +106,7 @@
         const { motion, useScroll, useSpring } = window.Motion;
         const { useState, useEffect } = React;
 
-        const Button = ({ children, primary, href }) => {
+        const Button = ({ children, primary, href, download }) => {
             const baseClass = "inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 shadow-lg";
             const colorClass = primary
                 ? "bg-accent text-white hover:bg-blue-400 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] border border-blue-500/50 hover:border-blue-400"
@@ -119,9 +119,10 @@
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     href={href || "#"}
-                    target={isExternal ? "_blank" : "_self"}
-                    rel={isExternal ? "noopener noreferrer" : undefined}
+                    target={download ? "_blank" : (isExternal ? "_blank" : "_self")}
+                    rel={isExternal || download ? "noopener noreferrer" : undefined}
                     className={`${baseClass} ${colorClass}`}
+                    download={download ? "" : undefined}
                 >
                     {children}
                 </motion.a>
@@ -224,7 +225,7 @@
 
                                 <div className="flex flex-wrap items-center gap-4">
                                     <Button primary href="#achievements">View My Work</Button>
-                                    <Button href="Resume.pdf">Download Resume</Button>
+                                    <Button href="Resume.pdf?v=2" download>Download Resume</Button>
                                     <div className="flex items-center gap-3 ml-2">
                                         <a href="https://github.com/Gowthamrec" target="_blank" className="p-3 rounded-full bg-surface/50 backdrop-blur-md border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors shadow-sm group">
                                             <i className="uil uil-github text-xl group-hover:scale-110 transition-transform block"></i>
